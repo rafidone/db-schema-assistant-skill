@@ -68,7 +68,7 @@ Clone the repository directly into a skill directory:
 
 ```bash
 mkdir -p ~/.config/opencode/skills
-git clone https://github.com/rafidone/db-schema-assistant.git \
+git clone https://github.com/rafidone/db-schema-assistant-skill.git \
   ~/.config/opencode/skills/db-schema-assistant
 ```
 
@@ -76,13 +76,13 @@ Or install it for a single project:
 
 ```bash
 mkdir -p .opencode/skills
-git clone https://github.com/rafidone/db-schema-assistant.git \
+git clone https://github.com/rafidone/db-schema-assistant-skill.git \
   .opencode/skills/db-schema-assistant
 ```
 
 The skill ID is the directory name: **`db-schema-assistant`**.
 
-> These URLs already point at [`rafidone/db-schema-assistant`](https://github.com/rafidone/db-schema-assistant).
+> These URLs already point at [`rafidone/db-schema-assistant-skill`](https://github.com/rafidone/db-schema-assistant-skill).
 
 Verify discovery by asking OpenCode to list or load the skill, or explicitly reference it:
 
@@ -98,7 +98,7 @@ Copy the repository into a compatible skills directory, for example:
 
 ```bash
 mkdir -p .claude/skills
-cp -R db-schema-assistant .claude/skills/
+cp -R db-schema-assistant-skill .claude/skills/db-schema-assistant
 ```
 
 Or paste `SKILL.md` into your assistant's system prompt / custom instructions. The skill is written to be portable: it uses standard Markdown, explicit rules, and target-specific sections rather than relying on a single vendor's tooling.
@@ -178,7 +178,7 @@ See [`examples/sample-output.md`](examples/sample-output.md) for a complete mult
 ## 🗂️ Repository Structure
 
 ```text
-db-schema-assistant/
+db-schema-assistant-skill/
 ├── SKILL.md                  # Primary system instructions, defaults, and few-shot examples
 ├── README.md                 # This file
 ├── CONTRIBUTING.md           # Contribution guidelines
