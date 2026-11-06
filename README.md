@@ -1,4 +1,4 @@
-# 🗄️ DB Schema Assistant
+# DB Schema Assistant
 
 > An open-source AI Agent Skill that turns product ideas into production-grade relational database architectures.
 
@@ -17,7 +17,7 @@ The skill is deliberately **self-contained**: a model reading only `SKILL.md` ge
 
 ---
 
-## ✨ Why This Skill Exists
+## Why This Skill Exists
 
 Most AI-generated schemas stop at table names. They skip foreign-key behavior, soft-delete correctness, tenant isolation, partial indexes, and rollback plans. This skill makes those decisions explicit and reviewable.
 
@@ -36,7 +36,7 @@ Every response contains four required sections:
 
 ---
 
-## 🚀 Features
+## Features
 
 - **3NF by default** — first, second, and third normal form checks, with an explicit denormalization ledger for justified exceptions.
 - **Mandatory audit columns** — every table gets `id`, `created_at`, `updated_at`, and `deleted_at`.
@@ -54,7 +54,7 @@ Every response contains four required sections:
 
 ---
 
-## 📦 Installation
+## Installation
 
 ### OpenCode (recommended)
 
@@ -114,7 +114,7 @@ When using it outside a skill-aware client, include the entire file. The section
 
 ---
 
-## 🧠 Usage
+## Usage
 
 ### Basic idea-to-schema
 
@@ -175,7 +175,7 @@ See [`examples/sample-output.md`](examples/sample-output.md) for a complete mult
 
 ---
 
-## 🗂️ Repository Structure
+## Repository Structure
 
 ```text
 db-schema-assistant-skill/
@@ -199,7 +199,7 @@ db-schema-assistant-skill/
 
 ---
 
-## 🛡️ Rules Enforced by the Skill
+## Rules Enforced by the Skill
 
 | Area | Default rule |
 | --- | --- |
@@ -220,20 +220,20 @@ db-schema-assistant-skill/
 
 ---
 
-## 🗄️ Supported Targets
+## Supported Targets
 
 | Target | Status | Notes |
 | --- | --- | --- |
-| PostgreSQL 15+ | ✅ Full | `timestamptz`, `uuid`, `citext`, `jsonb`, partial indexes, RLS guidance |
-| MySQL 8.0+ | ✅ Full | `DATETIME(6)`, `utf8mb4`, generated columns for partial uniqueness |
-| Prisma | ✅ Full | Native types, relation actions, raw-SQL gaps called out |
-| TypeORM | ✅ Full | Entities, relation actions, `synchronize: false`, migrations |
+| PostgreSQL 15+ | Full | `timestamptz`, `uuid`, `citext`, `jsonb`, partial indexes, RLS guidance |
+| MySQL 8.0+ | Full | `DATETIME(6)`, `utf8mb4`, generated columns for partial uniqueness |
+| Prisma | Full | Native types, relation actions, raw-SQL gaps called out |
+| TypeORM | Full | Entities, relation actions, `synchronize: false`, migrations |
 
 If no target is specified, the skill defaults to **PostgreSQL 15+** and states that assumption.
 
 ---
 
-## 📋 Abridged Example Output
+## Abridged Example Output
 
 The skill does not just list tables. It explains the model. The following is a shortened excerpt; the full 16-table reference is in [`examples/sample-output.md`](examples/sample-output.md).
 
@@ -284,7 +284,7 @@ These checks validate syntax and core behavior. They do not replace testing agai
 
 ---
 
-## 🧩 Customizing the Skill
+## Customizing the Skill
 
 The rules live in [`SKILL.md`](SKILL.md). Common customizations:
 
@@ -301,7 +301,7 @@ Keep changes consistent across the rule sections and the quality gate. If you ch
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome. Good contributions include:
 
@@ -317,7 +317,7 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) for details.
 
 ---
 
-## 📄 License
+## License
 
 Released under the [MIT License](LICENSE).
 
@@ -347,7 +347,7 @@ SOFTWARE.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 Built for the OpenCode skill ecosystem and the broader community of AI-assisted software engineering. Inspired by the database design reviews that every production team eventually learns to do the hard way.
 
