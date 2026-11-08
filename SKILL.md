@@ -29,6 +29,7 @@ Your output must be directly usable by an engineering team in a pull request.
 
 | If you need to… | Read |
 | --- | --- |
+| Execute quickly on a standard domain | Sections 0.4 and 3.7 |
 | Understand the non-negotiable rules | Section 2 |
 | Resolve a vague or conflicting request | Sections 0.3 and 3 |
 | Design a schema step by step | Section 4 |
@@ -37,6 +38,7 @@ Your output must be directly usable by an engineering team in a pull request.
 | Model complex relationships | Section 9 |
 | See worked examples | Section 13 |
 | Follow the exact output order | Section 14 |
+| Validate Mermaid and SQL before responding | Section 16, Fast-fail validation |
 | Self-check before responding | Section 16 |
 
 **Minimum reading path:** Section 0 → Section 2 → Section 3 → Section 14 → Section 16. Add Section 8 when soft delete is involved and Section 9 for complex relationships.
@@ -107,6 +109,18 @@ Use these defaults so two different models produce comparable designs. Record ea
 | Existing schema details | Assume greenfield only when no existing schema is described. | The user references existing tables, keys, or a migration. |
 | Unspecified volume | Assume moderate volume; avoid premature partitioning but note scale assumptions. | The user states high volume or time-series access. |
 | Unsupported target | State that it is unsupported, map to the nearest supported target, and do not invent dialect syntax. | The user insists; then provide a clearly labeled best-effort draft with open risks. |
+
+### 0.4 Performance and fast-track execution
+
+Optimize for first-pass accuracy and minimal token spend. These rules take precedence over exploratory narration, but never over correctness.
+
+- **Pattern fast-track (MUST).** If the domain fits a standard pattern (e.g., E-Commerce, SaaS, CMS, LMS), skip excessive initial chain-of-thought analysis and directly output the 4 standard deliverables. Seed the model from Section 3.7, reconcile it with the user's explicit requirements, and then produce the output contract in Section 14.
+- **Token efficiency (MUST).** Keep explainers concise. Prefer clean SQL comments and structured markdown over long narrative descriptions.
+- **No visible reasoning dumps.** Do not narrate intermediate analysis. Put material decisions in **Assumptions & Scope**, inline SQL comments, or a one-line index rationale.
+- **Ask only blocking questions.** On a recognized standard pattern, ask no clarifying questions unless the answer changes identity, tenancy, money representation, delete behavior, or the target artifact.
+- **Fast-track means less narration, not fewer checks.** Apply Section 2 rules, the Section 3.6 relationship matrix, the Section 14 output contract, and the Section 16 quality gate in full.
+- **Accuracy over speed.** If a requirement conflicts with the standard pattern, or the domain is hybrid or unusual, fall back to the normal workflow instead of forcing the template.
+- **Single-pass output.** Draft the four sections once, run the fast-fail validation and quality gate, fix defects, and return. Do not rewrite the complete answer for cosmetic changes.
 
 ---
 
@@ -410,6 +424,25 @@ For complex multi-table requests, answer these before writing DDL:
 5. Which parent/child pairs need coordinated soft delete or restore?
 6. Which uniqueness rules must be scoped to active rows?
 7. Which queries drive the indexes, and which indexes are only for FK enforcement?
+
+### 3.7 Domain pattern quick-links
+
+Use these mappings to resolve standard relational setups immediately instead of re-deriving them. They are defaults, not a substitute for the user's requirements.
+
+| Domain | Detect when the request mentions | Standard entities | Critical relationships and defaults |
+| --- | --- | --- | --- |
+| Auth / identity | login, signup, session, role, permission, password reset, SSO | `users`, `sessions`, `roles`, `permissions`, `role_permissions`, `user_roles`, `password_resets`, `email_verifications` | user 1:N sessions; user N:M roles; role N:M permissions. Hash all secrets; unique active email; hard-delete expired sessions; revoke sessions on password change. |
+| E-commerce | catalog, cart, checkout, product, order, payment, shipping, inventory | `customers`, `addresses`, `products`, `product_variants`, `categories`, `product_categories`, `carts`, `cart_items`, `orders`, `order_items`, `payments`, `shipments` | customer 1:N orders; order 1:N order_items; product 1:N variants; product N:M categories. Integer minor units; snapshot price and address on order; order lines are immutable after payment. |
+| SaaS billing | tenant, workspace, plan, subscription, invoice, usage, seat, coupon, dunning | `tenants`, `users`, `memberships`, `plans`, `prices`, `subscriptions`, `invoices`, `invoice_lines`, `payments`, `coupons`, `usage_records` | tenant 1:N memberships; user N:M tenants via memberships; tenant 1:N subscriptions; subscription 1:N invoices. `tenant_id` on every owned table; one active subscription per tenant; invoices and payments are append-only. |
+| Content management | CMS, blog, article, page, post, tag, category, media, revision, comment | `workspaces`, `users`, `posts`, `pages`, `categories`, `tags`, `post_tags`, `media`, `revisions`, `comments` | workspace 1:N content; content N:M tags; content 1:N revisions; content 1:N comments. Slug unique per workspace; revisions append-only; soft-delete content; JSON only for flexible metadata. |
+
+Pattern rules:
+
+- **Compose, do not duplicate.** When patterns overlap, share one identity model. For example, SaaS billing plus CMS uses one `users` table, one `tenants` table, and domain-specific tables that reference them.
+- **Prune aggressively.** Include only entities the request actually needs. Never add a template table merely because it appears above.
+- **Keep the tenant boundary.** In multi-tenant patterns, copy `tenant_id` onto every tenant-owned table and use composite foreign keys where a cross-tenant reference must be impossible.
+- **Apply the full contract.** Every selected table still gets the four audit columns, explicit FK actions, named checks, justified indexes, and migration coverage.
+- **Escalate exceptions.** If the request contradicts a pattern's default (for example, hard-deleting financial records), follow Section 0.3 and document the deviation.
 
 ---
 
@@ -2294,6 +2327,38 @@ erDiagram
 ## 16. Quality Gate
 
 Before returning an answer, verify every item. If any item fails, fix it and re-check.
+
+### Fast-fail validation
+
+Run these checks first. A single failure blocks the response. Fix the defect and re-run before continuing. Do not send output with unvalidated Mermaid or SQL.
+
+**Mermaid ERD**
+
+- [ ] The diagram starts with `erDiagram`.
+- [ ] Every entity is declared once as `ENTITY { ... }`, and every relationship endpoint matches a declared entity.
+- [ ] Every relationship uses valid cardinality syntax (`||--o{`, `||--||`, `}o--o{`, `}o--||`, `||--|{`) followed by `: label`.
+- [ ] Attribute lines use `type name` pairs, and keys are only `PK`, `FK`, or `UK`.
+- [ ] Entity and attribute names contain no spaces, semicolons, braces, parentheses, or unescaped quotes.
+- [ ] Braces and relationship lines are balanced; there are no duplicate entity blocks, dangling edges, or empty attribute blocks.
+
+**SQL DDL**
+
+- [ ] Every statement ends with `;`, and parentheses, quotes, and `BEGIN`/`COMMIT` blocks are balanced.
+- [ ] Identifier quoting is valid for the target: double quotes in PostgreSQL, backticks in MySQL.
+- [ ] Tables are created before any foreign key references them, or all foreign keys are added after table creation.
+- [ ] Foreign-key column types and composite column counts and order exactly match the referenced primary or unique key.
+- [ ] Every `CHECK`, `UNIQUE`, and `FOREIGN KEY` references existing columns; there are no trailing commas or empty clauses.
+- [ ] `DEFAULT` values are type-compatible; PostgreSQL timestamps use `now()` or `CURRENT_TIMESTAMP` without quotes.
+- [ ] PostgreSQL extensions (`pgcrypto`, `citext`) are created before first use; MySQL uses `utf8mb4` and `DATETIME(6)` consistently.
+- [ ] Reserved words used as identifiers are quoted in every reference.
+- [ ] The script contains no placeholders, ellipses, or comments that hide missing DDL.
+
+**ORM artifacts, when selected**
+
+- [ ] Prisma models and relation fields resolve to declared models, and `onDelete`/`onUpdate` values are valid.
+- [ ] TypeORM decorators reference declared columns and entities, and `synchronize` is `false`.
+
+**Stop condition:** If a check cannot be verified, do not send the artifact. Reduce scope, regenerate the failing section, or state the limitation and provide a valid partial artifact. Never ship unvalidated Mermaid or SQL.
 
 ### Schema integrity
 
